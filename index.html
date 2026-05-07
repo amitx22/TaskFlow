@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow AI Pro</title>
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Segoe UI,sans-serif;
+    }
+
+    body{
+      background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      color:white;
+      padding:20px;
+    }
+
+    .container{
+      width:100%;
+      max-width:850px;
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(20px);
+      border-radius:20px;
+      padding:30px;
+      box-shadow:0 15px 40px rgba(0,0,0,0.4);
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:10px;
+      font-size:2.5rem;
+    }
+
+    .subtitle{
+      text-align:center;
+      color:#d1d5db;
+      margin-bottom:25px;
+    }
+
+    .input-section{
+      display:grid;
+      grid-template-columns:2fr 1fr 1fr auto;
+      gap:10px;
+      margin-bottom:20px;
+    }
+
+    input,select{
+      padding:14px;
+      border:none;
+      outline:none;
+      border-radius:12px;
+      font-size:15px;
+    }
+
+    button{
+      border:none;
+      padding:14px 20px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:bold;
+      transition:.3s;
+    }
+
+    .add-btn{
+      background:#10b981;
+      color:white;
+    }
+
+    .add-btn:hover{
+      transform:scale(1.05);
+    }
+
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:20px;
+    }
+
+    .search{
+      flex:1;
+      min-width:220px;
+    }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .filter-btn{
+      background:#374151;
+      color:white;
+    }
+
+    .filter-btn.active{
+      background:#6366f1;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:15px;
+      margin-bottom:25px;
+    }
+
+    .card{
+      background:rgba(255,255,255,0.08);
+      padding:15px;
+      border-radius:14px;
+      text-align:center;
+    }
+
+    .card h3{
+      font-size:1.5rem;
+    }
+
+    ul{
+      list-style:none;
+      max-height:450px;
+      overflow-y:auto;
+    }
+
+    li{
+      background:rgba(255,255,255,0.08);
+      margin-bottom:12px;
+      padding:18px;
+      border-radius:14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      animation:fade .3s ease;
+    }
+
+    .task-left{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      flex:1;
+    }
+
+    .task-details{
+      flex:1;
+    }
+
+    .task-text{
+      font-size:16px;
+      font-weight:500;
+    }
+
+    .completed .task-text{
+      text-decoration:line-through;
+      opacity:.6;
+    }
+
+    .meta{
+      font-size:12px;
+      color:#d1d5db;
+      margin-top:4px;
+    }
+
+    .priority{
+      padding:4px 8px;
+      border-radius:8px;
+      font-size:11px;
+      font-weight:bold;
+    }
+
+    .high{background:#ef4444;}
+    .medium{background:#f59e0b;}
+    .low{background:#10b981;}
+
+    .actions{
+      display:flex;
+      gap:8px;
+    }
+
+    .icon-btn{
+      padding:8px 10px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .edit{background:#f59e0b;color:white;}
+    .delete{background:#ef4444;color:white;}
+
+    .empty{
+      text-align:center;
+      padding:30px;
+      color:#d1d5db;
+    }
+
+    @keyframes fade{
+      from{opacity:0;transform:translateY(10px);}
+      to{opacity:1;transform:translateY(0);}
+    }
+
+    @media(max-width:768px){
+      .input-section{
+        grid-template-columns:1fr;
+      }
+
+      .stats{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>TaskFlow AI Pro</h1>
+  <p class="subtitle">Advanced Task Management System</p>
+
+  <div class="input-section">
+    <input type="text" id="taskInput" placeholder="Enter task...">
+    <input type="date" id="dueDate">
+    <select id="priority">
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+    </select>
+    <button class="add-btn" id="addBtn">Add</button>
+  </div>
+
+  <div class="top-bar">
+    <input type="text" id="searchInput" class="search" placeholder="Search tasks...">
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="active">Active</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="card"><p>Total</p><h3 id="totalCount">0</h3></div>
+    <div class="card"><p>Pending</p><h3 id="pendingCount">0</h3></div>
+    <div class="card"><p>Completed</p><h3 id="completedCount">0</h3></div>
+    <div class="card"><p>Completion</p><h3 id="progressCount">0%</h3></div>
+  </div>
+
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+class TaskManager {
+  constructor() {
+    this.tasks = JSON.parse(localStorage.getItem("advanced_tasks")) || [];
+    this.filter = "all";
+    this.searchTerm = "";
+
+    this.init();
+  }
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.render();
+  }
+
+  cacheDOM() {
+    this.taskInput = document.getElementById("taskInput");
+    this.dueDate = document.getElementById("dueDate");
+    this.priority = document.getElementById("priority");
+    this.addBtn = document.getElementById("addBtn");
+    this.taskList = document.getElementById("taskList");
+    this.searchInput = document.getElementById("searchInput");
+
+    this.totalCount = document.getElementById("totalCount");
+    this.pendingCount = document.getElementById("pendingCount");
+    this.completedCount = document.getElementById("completedCount");
+    this.progressCount = document.getElementById("progressCount");
+  }
+
+  bindEvents() {
+    this.addBtn.addEventListener("click", () => this.addTask());
+
+    this.taskInput.addEventListener("keypress", e => {
+      if (e.key === "Enter") this.addTask();
+    });
+
+    this.searchInput.addEventListener("input", e => {
+      this.searchTerm = e.target.value.toLowerCase();
+      this.render();
+    });
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        this.filter = btn.dataset.filter;
+        this.render();
+      });
+    });
+  }
+
+  saveTasks() {
+    localStorage.setItem("advanced_tasks", JSON.stringify(this.tasks));
+  }
+
+  addTask() {
+    const text = this.taskInput.value.trim();
+
+    if (!text) return alert("Enter a task!");
+
+    const task = {
+      id: Date.now(),
+      text,
+      dueDate: this.dueDate.value || "No deadline",
+      priority: this.priority.value,
+      completed: false,
+      createdAt: new Date().toLocaleString()
+    };
+
+    this.tasks.unshift(task);
+
+    this.taskInput.value = "";
+    this.dueDate.value = "";
+
+    this.saveTasks();
+    this.render();
+  }
+
+  toggleTask(id) {
+    this.tasks = this.tasks.map(task =>
+      task.id === id ? {...task, completed: !task.completed} : task
+    );
+
+    this.saveTasks();
+    this.render();
+  }
+
+  deleteTask(id) {
+    this.tasks = this.tasks.filter(task => task.id !== id);
+    this.saveTasks();
+    this.render();
+  }
+
+  editTask(id) {
+    const task = this.tasks.find(t => t.id === id);
+    const updated = prompt("Edit task:", task.text);
+
+    if (updated && updated.trim()) {
+      task.text = updated.trim();
+      this.saveTasks();
+      this.render();
+    }
+  }
+
+  filteredTasks() {
+    return this.tasks.filter(task => {
+      const matchesSearch = task.text.toLowerCase().includes(this.searchTerm);
+
+      const matchesFilter =
+        this.filter === "all" ||
+        (this.filter === "active" && !task.completed) ||
+        (this.filter === "completed" && task.completed);
+
+      return matchesSearch && matchesFilter;
+    });
+  }
+
+  updateStats() {
+    const total = this.tasks.length;
+    const completed = this.tasks.filter(t => t.completed).length;
+    const pending = total - completed;
+    const progress = total ? Math.round((completed / total) * 100) : 0;
+
+    this.totalCount.textContent = total;
+    this.pendingCount.textContent = pending;
+    this.completedCount.textContent = completed;
+    this.progressCount.textContent = progress + "%";
+  }
+
+  render() {
+    const tasks = this.filteredTasks();
+
+    this.taskList.innerHTML = "";
+
+    if (!tasks.length) {
+      this.taskList.innerHTML = `<div class="empty">No tasks found</div>`;
+    }
+
+    tasks.forEach(task => {
+      const li = document.createElement("li");
+      li.className = task.completed ? "completed" : "";
+
+      li.innerHTML = `
+        <div class="task-left">
+          <input type="checkbox" ${task.completed ? "checked" : ""}>
+          <div class="task-details">
+            <div class="task-text">${task.text}</div>
+            <div class="meta">
+              Due: ${task.dueDate} | Created: ${task.createdAt}
+            </div>
+            <span class="priority ${task.priority}">
+              ${task.priority.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="icon-btn edit">✏</button>
+          <button class="icon-btn delete">🗑</button>
+        </div>
+      `;
+
+      li.querySelector("input").addEventListener("change", () => this.toggleTask(task.id));
+      li.querySelector(".delete").addEventListener("click", () => this.deleteTask(task.id));
+      li.querySelector(".edit").addEventListener("click", () => this.editTask(task.id));
+
+      this.taskList.appendChild(li);
+    });
+
+    this.updateStats();
+  }
+}
+
+new TaskManager();
+</script>
+
+</body>
+</html>
